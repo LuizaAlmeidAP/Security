@@ -109,7 +109,7 @@ def plot_results(df: pd.DataFrame) -> None:
         df["enc_mean"],
         yerr=df["enc_std"],
         marker="o",
-        capsize=4,
+        capsize=0,
         label="AES-CTR Encrypt"
     )
 
@@ -118,17 +118,22 @@ def plot_results(df: pd.DataFrame) -> None:
         df["dec_mean"],
         yerr=df["dec_std"],
         marker="s",
-        capsize=4,
+        capsize=0,
         label="AES-CTR Decrypt"
     )
 
-    plt.xscale("log")
+    plt.xticks(
+        df["file_name"], 
+        labels=df["file_name"], 
+    )
+
+    # plt.xscale("linear")
     plt.xlabel("File size (bytes)")
     plt.ylabel("Time (microseconds)")
     plt.title("AES-256 CTR Encryption/Decryption Time Use")
     plt.legend()
     plt.grid(True, which="both", linestyle="--", alpha=0.6)
-    # plt.tight_layout()
+    plt.tight_layout()
 
     plot_path = "results/aes_ctr_plot.png"
     plt.savefig(plot_path, dpi=300)
