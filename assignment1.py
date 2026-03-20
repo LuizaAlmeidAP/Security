@@ -13,9 +13,8 @@ iv = urandom(16)
 repetitions = 100
 DIRECTORY = Path('text_files')
 FILE_SIZE = [8, 64, 512, 4096, 32768, 262144, 2097152]
-# RESULTS_DIR = Path("results")
 
-# Used ChatGPT
+## -- Used ChatGPT
 ## USed the os.urandom function to generate random bytes and create files of specified sizes
 def generate_random_files():
     # files = {}
@@ -25,7 +24,7 @@ def generate_random_files():
         with open(filename, "wb") as f:
             f.write(os.urandom(size))
         # files[size] = filename
-    ## 
+## --- ChatGPT ends here 
 
 def enc_dec_test():
     results = [] # list for storing time use for encryption
@@ -50,7 +49,7 @@ def enc_dec_test():
                 enc_mean, enc_std = calculate_stats(time_list_enc)
                 dec_mean, dec_std = calculate_stats(time_list_dec)
                 
-                results.append({ # appends dict of results to list
+                results.append({ # appends dict of results to list. Will be used to create plot and csv 
                     "file_name": filename, 
                     "enc_mean": enc_mean, 
                     "enc_std": enc_std,
@@ -64,7 +63,7 @@ def enc_dec_test():
 
     return df
 
-def CTR_256_encrypt(message, size, state):
+def CTR_256_encrypt(message, size, state): # Encryption with AES-256 CTR
     cipher = Cipher(algorithms.AES(key), modes.CTR(iv))
     encryptor = cipher.encryptor()
     encrypted_msg = encryptor.update((message)) + encryptor.finalize()
@@ -77,7 +76,7 @@ def CTR_256_encrypt(message, size, state):
             f.close()
         return encrypted_msg
 
-def CTR_256_decrypt(encrypted_message, size, state):
+def CTR_256_decrypt(encrypted_message, size, state): # decryption with AES-256 CTR
     cipher = Cipher(algorithms.AES(key), modes.CTR(iv))
     decryptor = cipher.decryptor()
     decryptor.update(encrypted_message) + decryptor.finalize()
@@ -92,12 +91,12 @@ def timer(message, size, time_list, state, function):
 
 
 def calculate_stats(times_us):
-    mean_us = statistics.mean(times_us)
-    std_us = statistics.stdev(times_us)
+    mean_us = statistics.mean(times_us) # creating mean of times in list
+    std_us = statistics.stdev(times_us) # creating standard deviation of times in list
     return mean_us, std_us
 
 
-## Chatgpt
+### ---- Chatgpt
 def plot_results(df: pd.DataFrame) -> None:
     if not os.path.exists("results"):
         os.makedirs("results", exist_ok=True)
@@ -152,7 +151,8 @@ def save_results(df: pd.DataFrame) -> None:
     print("\nBenchmark results:")
     print(df.to_string(index=False))
     print(f"\nSaved CSV to: {csv_path}")
-##
+
+### ------ ChatGPT ends here
 
 if __name__ == "__main__":
     generate_random_files()
