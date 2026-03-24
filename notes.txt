@@ -1,0 +1,4 @@
+- How to benchmark, google it to find out to find out how to properly benchmark performnace.
+- cna use ai
+- point to the direction of where this information on how to benchmark is done. 
+- termal boosting: find out how to deactive it since timing can be 

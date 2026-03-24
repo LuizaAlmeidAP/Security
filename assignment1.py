@@ -1,12 +1,15 @@
 import os
 from os import urandom
 from binascii import hexlify
+from time import time
 from cryptography .hazmat. primitives . ciphers import Cipher , algorithms , modes
 import timeit
 import statistics
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
+import pyperf
+import time
 
 key = urandom(32)
 iv = urandom(16)
@@ -83,11 +86,20 @@ def CTR_256_decrypt(encrypted_message, size, state): # decryption with AES-256 C
 
 
 def timer(message, size, time_list, state, function):
+    # runner = pyperf.Runner()
+    # runner.bench_func(f"{function.__name__} - {size} bytes", lambda: function(message, size, state))
+    # time1 = time.perf_counter_ns()
+    # time2 = time.perf_counter_ns()
+    
+    for _ in range(3):
+        function(message, size, state)
+
     time1 = timeit.default_timer() # timer starts here
     function(message, size, state)
     time2 = timeit.default_timer() # timer ends here
+
     time_list.append(time2 - time1) # appends time use to list
-    return time_list
+
 
 
 def calculate_stats(times_us):
@@ -126,6 +138,7 @@ def plot_results(df: pd.DataFrame) -> None:
         labels=df["file_name"], 
     )
 
+    plt.yscale("log") # using logarithmic scale for better visualization of time differences across file sizes
     # plt.xscale("linear")
     plt.xlabel("File size (bytes)")
     plt.ylabel("Time (microseconds)")
