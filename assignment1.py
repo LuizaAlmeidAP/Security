@@ -86,12 +86,8 @@ def CTR_256_decrypt(encrypted_message, size, state): # decryption with AES-256 C
 
 
 def timer(message, size, time_list, state, function):
-    # runner = pyperf.Runner()
-    # runner.bench_func(f"{function.__name__} - {size} bytes", lambda: function(message, size, state))
-    # time1 = time.perf_counter_ns()
-    # time2 = time.perf_counter_ns()
-    
-    for _ in range(3):
+
+    for _ in range(3): # warmup function :)
         function(message, size, state)
 
     time1 = timeit.default_timer() # timer starts here
