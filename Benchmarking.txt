@@ -1,0 +1,36 @@
+Benchmarking basics:
+
+For the benchmarking of the project we use the following rules:
+Disable CPU turbo boost/power-saving mode;
+Avoid having background processes running;
+Warm-up for more consistent results;
+Running multiple times and averaging the result
+Using "pyperf" to achive the result python library (https://pyperf.readthedocs.io/en)
+
+
+AES benchmarking: 
+For AES we measure 
+The throughput(Data per second);
+The Mean Encription/Decription time ;
+The Standard deviation;
+The Median;
+
+
+RSA benchmarking:
+
+For RSA we measure
+the number of public/private-key operations(key generation) per second;
+The Encription/Decription time;
+The Throughput;
+
+
+SHA-256: benchmarking:
+The Throughput;
+The Time per hash:;
+
+
+Sources: 
+https://www.bearssl.org/speed.html
+https://docs.nordicsemi.com/bundle/ncs-2.4.1/page/nrf/samples/crypto/aes_ctr/README.html
+https://infosecwriteups.com/breaking-down-sha-256-algorithm-2ce61d86f7a3
+https://zk-plus.github.io/tutorials/basics/hashing-algorithms-benchmarks
