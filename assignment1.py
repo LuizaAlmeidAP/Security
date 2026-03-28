@@ -49,18 +49,24 @@ def enc_dec_test():
                 for _ in range(repetitions):
                     timer(enc_message, None, time_list_dec, None, CTR_256_decrypt) # calls timer function to time the decryption process
 
-                enc_mean, enc_std = calculate_stats(time_list_enc)
-                dec_mean, dec_std = calculate_stats(time_list_dec)
+                enc_mean, enc_std, enc_median = calculate_stats(time_list_enc)
+                dec_mean, dec_std, dec_median = calculate_stats(time_list_dec)
+                enc_throughput = (size / enc_mean) / (1024 * 1024)
+                dec_throughput = (size / dec_mean) / (1024 * 1024)
                 
                 results.append({ # appends dict of results to list. Will be used to create plot and csv 
                     "file_name": filename, 
-                    "enc_mean": enc_mean, 
+                    "enc_mean": enc_mean,
+                    "enc_median": enc_median, 
                     "enc_std": enc_std,
+                    "enc_throughput": enc_throughput,
                     "dec_mean": dec_mean,
-                    "dec_std": dec_std}) 
+                    "dec_median": dec_median,
+                    "dec_std": dec_std,
+                    "dec_throughput": dec_throughput}) 
 
-                print(f"Encryption {filename} - Enc mean time: {enc_mean:.6f} seconds, Std Dev: {enc_std:.6f} seconds")
-                print(f"Decryption {filename} - Dec mean time: {dec_mean:.6f} seconds, Std Dev: {dec_std:.6f} seconds")
+                print(f"Encryption {filename} - Enc mean time: {enc_mean:.6f} seconds, Enc median time: {enc_median:.6f} seconds, Std Dev: {enc_std:.6f} seconds, Enc throughput: {enc_throughput} MB/s")
+                print(f"Decryption {filename} - Dec mean time: {dec_mean:.6f} seconds, Dec median time: {dec_median:.6f} seconds, Std Dev: {dec_std:.6f} seconds, Dec throughput: {enc_throughput} MB/s")
 
     df = pd.DataFrame(results)
 
@@ -87,12 +93,12 @@ def CTR_256_decrypt(encrypted_message, size, state): # decryption with AES-256 C
 
 def timer(message, size, time_list, state, function):
 
-    for _ in range(3): # warmup function :)
+    for _ in range(10): # warmup function :)
         function(message, size, state)
 
-    time1 = timeit.default_timer() # timer starts here
+    time1 = time.perf_counter() # timer starts here
     function(message, size, state)
-    time2 = timeit.default_timer() # timer ends here
+    time2 = time.perf_counter() # timer ends here
 
     time_list.append(time2 - time1) # appends time use to list
 
@@ -101,7 +107,8 @@ def timer(message, size, time_list, state, function):
 def calculate_stats(times_us):
     mean_us = statistics.mean(times_us) # creating mean of times in list
     std_us = statistics.stdev(times_us) # creating standard deviation of times in list
-    return mean_us, std_us
+    median_us = statistics.median(times_us) # creating median of time in list
+    return mean_us, std_us, median_us
 
 
 ### ---- Chatgpt
