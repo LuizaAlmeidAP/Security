@@ -51,8 +51,8 @@ def enc_dec_test():
 
                 enc_mean, enc_std, enc_median = calculate_stats(time_list_enc)
                 dec_mean, dec_std, dec_median = calculate_stats(time_list_dec)
-                enc_throughput = (size / enc_mean) / (1024 * 1024)
-                dec_throughput = (size / dec_mean) / (1024 * 1024)
+                enc_throughput = (size / enc_median) / (1024 * 1024)
+                dec_throughput = (size / dec_median) / (1024 * 1024)
                 
                 results.append({ # appends dict of results to list. Will be used to create plot and csv 
                     "file_name": filename, 
@@ -65,8 +65,8 @@ def enc_dec_test():
                     "dec_std": dec_std,
                     "dec_throughput": dec_throughput}) 
 
-                print(f"Encryption {filename} - Enc mean time: {enc_mean:.6f} seconds, Enc median time: {enc_median:.6f} seconds, Std Dev: {enc_std:.6f} seconds, Enc throughput: {enc_throughput} MB/s")
-                print(f"Decryption {filename} - Dec mean time: {dec_mean:.6f} seconds, Dec median time: {dec_median:.6f} seconds, Std Dev: {dec_std:.6f} seconds, Dec throughput: {enc_throughput} MB/s")
+                print(f"Encryption {filename} - Enc mean time: {enc_mean:.6f} seconds, Enc median time: {enc_median:.6f} seconds, Std Dev: {enc_std:.6f} seconds, Enc throughput: {enc_throughput:.6f} MB/s")
+                print(f"Decryption {filename} - Dec mean time: {dec_mean:.6f} seconds, Dec median time: {dec_median:.6f} seconds, Std Dev: {dec_std:.6f} seconds, Dec throughput: {enc_throughput:.6f} MB/s")
 
     df = pd.DataFrame(results)
 
@@ -92,15 +92,12 @@ def CTR_256_decrypt(encrypted_message, size, state): # decryption with AES-256 C
 
 
 def timer(message, size, time_list, state, function):
-
-    for _ in range(10): # warmup function :)
+    start = time.perf_counter()
+    for _ in range(100):
         function(message, size, state)
+    end = time.perf_counter()
 
-    time1 = time.perf_counter() # timer starts here
-    function(message, size, state)
-    time2 = time.perf_counter() # timer ends here
-
-    time_list.append(time2 - time1) # appends time use to list
+    time_list.append((end - start) / 100 * 1e6)
 
 
 
