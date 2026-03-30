@@ -97,7 +97,7 @@ def timer(message, size, time_list, state, function):
         function(message, size, state)
     end = time.perf_counter()
 
-    time_list.append((end - start) / 100 * 1e6)
+    time_list.append((end - start) / 100)
 
 
 
