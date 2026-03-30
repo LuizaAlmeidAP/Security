@@ -2,7 +2,7 @@ import os
 import math
 from os import urandom
 from binascii import hexlify
-from time import time
+import time
 from cryptography.hazmat.primitives.asymmetric import rsa
 import hashlib
 import timeit
@@ -22,7 +22,7 @@ from pathlib import Path
 #https://pt.linkedin.com/pulse/how-generate-rsa-key-pairs-python-simple-guide-secure-ribeiro-cissp-hjcye?tl=pt
 #https://www.w3schools.com/python/ref_func_pow.asp
 
-repetitions = 100
+repetitions = 10
 DIRECTORY = Path('text_files')
 FILE_SIZE = [8, 64, 512, 4096, 32768, 262144, 2097152]
 
@@ -82,18 +82,26 @@ def enc_dec_test():
                 for _ in range(repetitions):
                     timer(enc_message, size, time_list_dec, None, rsa_decryptograph) # calls timer function to time the decryption process
 
-                enc_mean, enc_std = calculate_stats(time_list_enc)
-                dec_mean, dec_std = calculate_stats(time_list_dec)
+
+                enc_mean, enc_std, enc_median = calculate_stats(time_list_enc)
+                dec_mean, dec_std, dec_median = calculate_stats(time_list_dec)
+                enc_throughput = (size / enc_median ) / (1024 * 1024)
+                dec_throughput = (size / dec_median ) / (1024 * 1024)
                 
                 results.append({ # appends dict of results to list. Will be used to create plot and csv 
                     "file_name": filename, 
-                    "enc_mean": enc_mean, 
+                    "enc_mean": enc_mean,
+                    "enc_median": enc_median, 
                     "enc_std": enc_std,
+                    "enc_throughput": enc_throughput,
                     "dec_mean": dec_mean,
-                    "dec_std": dec_std}) 
+                    "dec_median": dec_median,
+                    "dec_std": dec_std,
+                    "dec_throughput": dec_throughput}) 
 
-                print(f"Encryption {filename} - Enc mean time: {enc_mean:.6f} seconds, Std Dev: {enc_std:.6f} seconds")
-                print(f"Decryption {filename} - Dec mean time: {dec_mean:.6f} seconds, Std Dev: {dec_std:.6f} seconds")
+                print(f"Encryption {filename} - Enc mean time: {enc_mean:.6f} seconds, Enc median time: {enc_median:.6f} seconds, Std Dev: {enc_std:.6f} seconds, Enc throughput: {enc_throughput:6f} MB/s")
+                print(f"Decryption {filename} - Dec mean time: {dec_mean:.6f} seconds, Dec median time: {dec_median:.6f} seconds, Std Dev: {dec_std:.6f} seconds, Dec throughput: {dec_throughput:6f} MB/s")
+
 
     df = pd.DataFrame(results)
 
@@ -170,15 +178,13 @@ def rsa_decryptograph(cipher, size, state):
     
     
 def timer(message, size, time_list, state, function):
-
-    for _ in range(3): # warmup function :)
+    start = time.perf_counter()
+    for _ in range(100):
         function(message, size, state)
+    end = time.perf_counter()
 
-    time1 = timeit.default_timer() # timer starts here
-    function(message, size, state)
-    time2 = timeit.default_timer() # timer ends here
+    time_list.append(((end - start) / 100) )
 
-    time_list.append(time2 - time1) # appends time use to list
 
 
 
@@ -187,7 +193,9 @@ def timer(message, size, time_list, state, function):
 def calculate_stats(times_us):
     mean_us = statistics.mean(times_us) # creating mean of times in list
     std_us = statistics.stdev(times_us) # creating standard deviation of times in list
-    return mean_us, std_us
+    median_us = statistics.median(times_us) # creating median of time in list
+    return mean_us, std_us, median_us
+
 
 ### ---- Chatgpt
 def plot_results(df: pd.DataFrame) -> None:
@@ -253,7 +261,6 @@ if __name__ == "__main__":
     result = enc_dec_test()
     plot_results(result) # plotting of results to graph
     save_results(result) # saving of results to csv file
-
 
 
 
