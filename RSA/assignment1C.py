@@ -2,7 +2,7 @@ import os
 import math
 from os import urandom
 from binascii import hexlify
-import time
+from time import time
 from cryptography.hazmat.primitives.asymmetric import rsa
 import hashlib
 import timeit
@@ -22,7 +22,7 @@ from pathlib import Path
 #https://pt.linkedin.com/pulse/how-generate-rsa-key-pairs-python-simple-guide-secure-ribeiro-cissp-hjcye?tl=pt
 #https://www.w3schools.com/python/ref_func_pow.asp
 
-repetitions = 10
+repetitions = 100
 DIRECTORY = Path('text_files')
 FILE_SIZE = [8, 64, 512, 4096, 32768, 262144, 2097152]
 
@@ -82,26 +82,43 @@ def enc_dec_test():
                 for _ in range(repetitions):
                     timer(enc_message, size, time_list_dec, None, rsa_decryptograph) # calls timer function to time the decryption process
 
+                enc_mean, enc_std = calculate_stats(time_list_enc)
+                dec_mean, dec_std = calculate_stats(time_list_dec)
 
-                enc_mean, enc_std, enc_median = calculate_stats(time_list_enc)
-                dec_mean, dec_std, dec_median = calculate_stats(time_list_dec)
-                enc_throughput = (size / enc_median ) / (1024 * 1024)
-                dec_throughput = (size / dec_median ) / (1024 * 1024)
+                #Gemini use
+                enc_mean, enc_std = calculate_stats(time_list_enc)
+                dec_mean, dec_std = calculate_stats(time_list_dec)
                 
+               
+                # back to seconds
+                enc_time_sec = enc_mean / 1_000_000
+                dec_time_sec = dec_mean / 1_000_000
+                
+                
+                # Size in Megabytes 
+                size_mb = size / (1024 * 1024)
+                
+                # Throughput (MB/s) = Size (MB) / Time (Seconds)
+                enc_throughput_MBps = size_mb / enc_time_sec if enc_time_sec > 0 else 0
+                dec_throughput_MBps = size_mb / dec_time_sec if dec_time_sec > 0 else 0
+                # =========================================================
+
                 results.append({ # appends dict of results to list. Will be used to create plot and csv 
                     "file_name": filename, 
-                    "enc_mean": enc_mean,
-                    "enc_median": enc_median, 
+                    "file_size_bytes": size,
+                    "enc_mean": enc_mean, 
                     "enc_std": enc_std,
-                    "enc_throughput": enc_throughput,
+                    "enc_throughput_MBps": enc_throughput_MBps, # <-- Salvando Throughput
                     "dec_mean": dec_mean,
-                    "dec_median": dec_median,
                     "dec_std": dec_std,
-                    "dec_throughput": dec_throughput}) 
+                    "dec_throughput_MBps": dec_throughput_MBps  # <-- Salvando Throughput
+                }) 
 
-                print(f"Encryption {filename} - Enc mean time: {enc_mean:.6f} seconds, Enc median time: {enc_median:.6f} seconds, Std Dev: {enc_std:.6f} seconds, Enc throughput: {enc_throughput:6f} MB/s")
-                print(f"Decryption {filename} - Dec mean time: {dec_mean:.6f} seconds, Dec median time: {dec_median:.6f} seconds, Std Dev: {dec_std:.6f} seconds, Dec throughput: {dec_throughput:6f} MB/s")
-
+                print(f"Encryption {filename} - Time: {enc_time_sec:.6f} seconds | Throughput: {enc_throughput_MBps:.4f} MB/s")
+                print(f"Decryption {filename} - Time: {dec_time_sec:.6f} seconds | Throughput: {dec_throughput_MBps:.4f} MB/s")
+                #Gemini end
+                print(f"Encryption {filename} - Enc mean time: {enc_mean:.6f} microseconds, Std Dev: {enc_std:.6f} microseconds")
+                print(f"Decryption {filename} - Dec mean time: {dec_mean:.6f} microseconds, Std Dev: {dec_std:.6f} microseconds")
 
     df = pd.DataFrame(results)
 
@@ -178,13 +195,16 @@ def rsa_decryptograph(cipher, size, state):
     
     
 def timer(message, size, time_list, state, function):
-    start = time.perf_counter()
-    for _ in range(100):
+
+    for _ in range(3): # warmup function :)
         function(message, size, state)
-    end = time.perf_counter()
 
-    time_list.append(((end - start) / 100) )
+    time1 = timeit.default_timer() # timer starts here
+    function(message, size, state)
+    time2 = timeit.default_timer() # timer ends here
 
+    total_time = (time2 - time1)* 1_000_000 #time is in microsseconds
+    time_list.append(total_time) # appends time use to list
 
 
 
@@ -193,9 +213,7 @@ def timer(message, size, time_list, state, function):
 def calculate_stats(times_us):
     mean_us = statistics.mean(times_us) # creating mean of times in list
     std_us = statistics.stdev(times_us) # creating standard deviation of times in list
-    median_us = statistics.median(times_us) # creating median of time in list
-    return mean_us, std_us, median_us
-
+    return mean_us, std_us
 
 ### ---- Chatgpt
 def plot_results(df: pd.DataFrame) -> None:
@@ -256,11 +274,36 @@ def save_results(df: pd.DataFrame) -> None:
 
 ### ------ ChatGPT ends here
 
+
+
+
+##For benchmarking
+#the number of public/private-key operations(key generation) per second
+def rsa_key_genetation(number):
+    time_start = timeit.default_timer()
+    for i in range(number):
+        rsa.generate_private_key(public_exponent=65537, key_size=2048 )
+    time_end = timeit.default_timer()
+    total_time = time_end - time_start
+    velocity = number/total_time
+    print(f"{number} keys were generated in {total_time:.4f} seconds.")
+    print(f"{velocity:.2f} keys per second.")
+
+    
+
+
+
+
 if __name__ == "__main__":
+    rsa_key_genetation(10) #escolher o melhor número de iterações
     generate_random_files()
     result = enc_dec_test()
     plot_results(result) # plotting of results to graph
     save_results(result) # saving of results to csv file
+
+
+
+
 
 
 
