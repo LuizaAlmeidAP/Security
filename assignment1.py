@@ -51,8 +51,8 @@ def enc_dec_test():
 
                 enc_mean, enc_std, enc_median = calculate_stats(time_list_enc)
                 dec_mean, dec_std, dec_median = calculate_stats(time_list_dec)
-                enc_throughput = (size / enc_median) / (1024 * 1024)
-                dec_throughput = (size / dec_median) / (1024 * 1024)
+                enc_throughput = ((size/ (1024 * 1024)) / enc_median) 
+                dec_throughput = ((size/ (1024 * 1024)) / dec_median)
                 
                 results.append({ # appends dict of results to list. Will be used to create plot and csv 
                     "file_name": filename, 
@@ -66,7 +66,7 @@ def enc_dec_test():
                     "dec_throughput": dec_throughput}) 
 
                 print(f"Encryption {filename} - Enc mean time: {enc_mean:.6f} seconds, Enc median time: {enc_median:.6f} seconds, Std Dev: {enc_std:.6f} seconds, Enc throughput: {enc_throughput:.6f} MB/s")
-                print(f"Decryption {filename} - Dec mean time: {dec_mean:.6f} seconds, Dec median time: {dec_median:.6f} seconds, Std Dev: {dec_std:.6f} seconds, Dec throughput: {enc_throughput:.6f} MB/s")
+                print(f"Decryption {filename} - Dec mean time: {dec_mean:.6f} seconds, Dec median time: {dec_median:.6f} seconds, Std Dev: {dec_std:.6f} seconds, Dec throughput: {dec_throughput:.6f} MB/s")
 
     df = pd.DataFrame(results)
 
@@ -83,22 +83,25 @@ def CTR_256_encrypt(message, size, state): # Encryption with AES-256 CTR
         with open(f"enc_data/{size}_encrypted.bin", "wb") as f:
             f.write(encrypted_msg)
             f.close()
-        return encrypted_msg
+    return encrypted_msg
 
 def CTR_256_decrypt(encrypted_message, size, state): # decryption with AES-256 CTR
     cipher = Cipher(algorithms.AES(key), modes.CTR(iv))
     decryptor = cipher.decryptor()
-    decryptor.update(encrypted_message) + decryptor.finalize()
-
+    decrypted_msg = decryptor.update(encrypted_message) + decryptor.finalize()
+    return decrypted_msg
 
 def timer(message, size, time_list, state, function):
-    start = time.perf_counter()
-    for _ in range(100):
+
+    for _ in range(3): # warmup function :)
         function(message, size, state)
-    end = time.perf_counter()
 
-    time_list.append((end - start) / 100)
+    time1 = timeit.default_timer() # timer starts here
+    function(message, size, state)
+    time2 = timeit.default_timer() # timer ends here
 
+    total_time = (time2 - time1)* 1_000_000 #time is in microsseconds
+    time_list.append(total_time) # appends time use to list
 
 
 def calculate_stats(times_us):
