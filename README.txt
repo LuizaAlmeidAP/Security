@@ -74,3 +74,9 @@ assignment1C.py
   rsa_cryptograph(mensagem, size, state): given a message, the size of the message and a state, encrypts the message with an RSA hybrid that generates a random r, uses RSA on R , gets the Hash of the cypher r and XOR's it with the plaintext 
 
   rsa_decryptograph(cipher, size, state): given a message, the size of the message and a state, decrypts the message in an RSA hybrid by getting the crypted r hash, hashing again, using the private key to decrypt the r and XOR's it with the cypher text 
+
+  rsa_key_genetation(number): given a number generates number keys to calculate how many keys the algorith can generate per second.
+
+assignment1D.py 
+
+  sha_cryptograph(mensagem, size, state): given a message, the size of the message and a state, encrypts the message with SHA-256
