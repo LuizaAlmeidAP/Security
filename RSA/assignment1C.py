@@ -101,7 +101,6 @@ def enc_dec_test():
 
                 results.append({ # appends dict of results to list. Will be used to create plot and csv 
                     "file_name": filename, 
-                    "file_size_bytes": size,
                     "enc_mean": enc_mean, 
                     "enc_median": enc_median,
                     "enc_std": enc_std,
