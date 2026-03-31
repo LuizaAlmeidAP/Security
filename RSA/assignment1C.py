@@ -82,13 +82,9 @@ def enc_dec_test():
                 for _ in range(repetitions):
                     timer(enc_message, size, time_list_dec, None, rsa_decryptograph) # calls timer function to time the decryption process
 
-                enc_mean, enc_std = calculate_stats(time_list_enc)
-                dec_mean, dec_std = calculate_stats(time_list_dec)
+                enc_mean, enc_std, enc_median = calculate_stats(time_list_enc)
+                dec_mean, dec_std, dec_median = calculate_stats(time_list_dec)
 
-                #Gemini use
-                enc_mean, enc_std = calculate_stats(time_list_enc)
-                dec_mean, dec_std = calculate_stats(time_list_dec)
-                
                
                 # back to seconds
                 enc_time_sec = enc_mean / 1_000_000
@@ -107,9 +103,11 @@ def enc_dec_test():
                     "file_name": filename, 
                     "file_size_bytes": size,
                     "enc_mean": enc_mean, 
+                    "enc_median": enc_median,
                     "enc_std": enc_std,
                     "enc_throughput_MBps": enc_throughput_MBps, # <-- Salvando Throughput
                     "dec_mean": dec_mean,
+                    "dec_median": dec_median,
                     "dec_std": dec_std,
                     "dec_throughput_MBps": dec_throughput_MBps  # <-- Salvando Throughput
                 }) 
@@ -117,8 +115,8 @@ def enc_dec_test():
                 print(f"Encryption {filename} - Time: {enc_time_sec:.6f} seconds | Throughput: {enc_throughput_MBps:.4f} MB/s")
                 print(f"Decryption {filename} - Time: {dec_time_sec:.6f} seconds | Throughput: {dec_throughput_MBps:.4f} MB/s")
                 #Gemini end
-                print(f"Encryption {filename} - Enc mean time: {enc_mean:.6f} microseconds, Std Dev: {enc_std:.6f} microseconds")
-                print(f"Decryption {filename} - Dec mean time: {dec_mean:.6f} microseconds, Std Dev: {dec_std:.6f} microseconds")
+                print(f"Encryption {filename} - Enc mean time: {enc_mean:.6f} microseconds, Enc median time: {enc_median:.6f} microseconds, Std Dev: {enc_std:.6f} microseconds")
+                print(f"Decryption {filename} - Dec mean time: {dec_mean:.6f} microseconds, Dec median time: {dec_median:.6f} microseconds, Std Dev: {dec_std:.6f} microseconds")
 
     df = pd.DataFrame(results)
 
@@ -213,7 +211,8 @@ def timer(message, size, time_list, state, function):
 def calculate_stats(times_us):
     mean_us = statistics.mean(times_us) # creating mean of times in list
     std_us = statistics.stdev(times_us) # creating standard deviation of times in list
-    return mean_us, std_us
+    median_us = statistics.median(times_us) # creating median of time in list
+    return mean_us, std_us, median_us
 
 ### ---- Chatgpt
 def plot_results(df: pd.DataFrame) -> None:
